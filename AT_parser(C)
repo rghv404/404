@@ -1,0 +1,126 @@
+#include<stdio.h>
+#include<stdint.h>
+#include<stdlib.h>
+#include<string.h>
+typedef struct{
+	char header[3];
+	char body[128];
+}AT_msg_Data;
+
+typedef void (*CB_AT_GROUP)(char **,char **, char *);
+CB_AT_GROUP  CB_GROUP_SIM;
+//CB_AT_GROUP = CB_Group_SMS
+//CB_AT_GROUP = CB_Group_VOICE
+//CB_AT_GROUP = CB_Group_MODEM
+
+char at_comm[4],at_param[128];
+char *arr_SIM[] = {"CGMI", "CGMM", "CGMR", "CGSN", "CSCS", "CIMI", "WS46"};
+char *arr_SIM_resp[] = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"};			//test responses....actual responses to be added
+const int asize = sizeof(arr_SIM)/sizeof(arr_SIM[0]);//other implementation of calculating size needs to be done to not make it repeatable for array of every group
+static void at_msg(char);
+static void at_split(char *);
+static void at_pars_comm(AT_msg_Data *);
+static int contains_param(AT_msg_Data *);
+
+void generic_group_func(char **, char **, char *);
+void register_callBack_Group(CB_AT_GROUP , char **, char**, char *);
+int search(char *, char **);
+
+static char __rx_data[512];
+static int comm_index = 0;
+static const char AT_EOF = '\r';
+
+int main(){
+	char text[] = "AT+CGMI\rAT+CGMM=Hello\r";	//predefined input is used to test the code, later input
+										//changed to console/file, however format should be same
+	int i;
+	printf("In main\n");
+	for (i=0;i< strlen(text);i++){
+		at_msg(text[i]);
+	}
+	return 0;
+}
+static void at_msg(char text){
+	printf("\nInside at_msg: %c\n",text);
+	__rx_data[comm_index++] = text;
+	if(text == AT_EOF){
+		printf("%s\n",__rx_data);
+		at_split(__rx_data);
+		comm_index = 0;
+	}
+}
+static void at_split(char *text){
+	AT_msg_Data *data;
+	data = malloc(sizeof(AT_msg_Data));
+	printf("String received: %s\n",text);
+	int result = sscanf(__rx_data,"%[^+]+%[^\r]\r",(data->header),(data->body));
+	printf("Result: %d\n",result);
+	if(result >= 2){
+		//printf("Parameter: %d\n",contains_param(data));
+		if(contains_param(data) == 1){
+			sscanf(data->body,"%[^=]=%[^\r]\r",at_comm,at_param);
+			strncpy(data->body, at_comm,10);
+			printf("%s\n",data->body);
+		}
+		printf("%s %s\n",data->header,data->body);
+		at_pars_comm(data);
+	}else{
+		printf("Invalid input"); 	//more if/else cases can be added for ADT etc. commands
+	}
+}
+static void at_pars_comm(AT_msg_Data *data){
+	if(strcmp(data->header,"AT") == 0 || strcmp(data->header,"ATD") == 0){
+		if(search(data->body,arr_SIM) == 1){
+			CB_GROUP_SIM = generic_group_func;
+			register_callBack_Group(CB_GROUP_SIM, arr_SIM, arr_SIM_resp, data->body);
+		}
+	}else{
+		printf("Error!");
+	}
+}
+static int contains_param(AT_msg_Data *data){
+	char ch = '=';int i;
+	for (i=0; data->body[i] != '\0'; i++){
+		if(data->body[i] == ch){
+			return 1;
+		}
+	}
+	return 0;
+}
+void generic_group_func(char **arr, char **arr_resp, char *key){
+	int i = 0,result;
+	while((result = strcmp(arr[i],key)) != 0 && arr[i++] != NULL){
+		//no statement needed inside loop
+	}
+	if(result == 0){
+		printf("\nResponse from Modem:\n%s: %s\nOK!",key,arr_resp[i]);
+	}
+}
+void register_callBack_Group(CB_AT_GROUP group, char **arr, char **arr_resp, char *key){
+	//file operation can be dine here
+	group(arr, arr_resp, key);
+}
+static int binSearch(char *arr[], int max, char *key){
+	int position, begin = 0, cond = 0;
+	int end = max - 1;
+	while (begin <= end){
+		position = (end + begin)/2;
+		if((cond = strcmp(arr[position],key)) == 0){
+			return 1;
+		}
+		else if (cond < 0){
+			begin = position + 1;
+		}
+		else{
+			end = position -1;
+		}
+	}
+	return 0;
+}
+int search(char *comm, char **arr){
+	//int asize = sizeof(arr) / sizeof(arr[0]);
+	if(binSearch(arr, asize, comm) == 1){
+		return 1;
+	}
+	return 0;
+}
