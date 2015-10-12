@@ -1,0 +1,26 @@
+def createSubArray(arr, i):
+    temp = 0
+    A = []
+    for i in range(i,len(arr)):
+        temp += arr[i]
+        A.append(temp)
+    return A
+    
+def maxSum(arr):
+    arrayOf_SubSum = []
+    for i in range(len(arr)):
+        arrayOf_SubSum.append(createSubArray(arr, i))
+    print arrayOf_SubSum
+    maxArray = []
+    for i in range(len(arrayOf_SubSum)):
+        maxArray.append(max(arrayOf_SubSum[i]))
+    maxSum = max(maxArray)
+    print maxSum
+    start = maxArray.index(maxSum)
+    end = (arrayOf_SubSum[start]).index(maxSum)
+    print start, end
+    for i in range(start, end+start+1):
+        print arr[i],
+
+arr = [-2,1,-3,4,-1,2,1,-5,4]
+maxSum(arr)
