@@ -1,0 +1,19 @@
+def createNumber(a):
+    i = 0
+    if len(a) > 1:
+        while a and a[i] == 0:
+            a.pop(i)
+    if not a:
+        return [1]
+    for i in range(len(a)-1,-1,-1):
+        a[i] += 1
+        num = str(a[i])
+        if len(num) > 1 :
+            a[i] = 0
+            continue
+        else:
+            break
+    if a[0] == 0:
+        a.append(1)
+        a.reverse()
+    return a
