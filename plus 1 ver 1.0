@@ -1,0 +1,11 @@
+def createNumber(arr):
+    number = 0
+    result = []
+    for i in range(len(arr)):
+        index = len(arr) - i - 1
+        number += arr[i] * 10**index
+    number += 1
+    result = [int(x) for x in str(number)]
+    return result
+arr = [0]
+print createNumber(arr)
