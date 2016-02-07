@@ -1,0 +1,30 @@
+def divideSet(goals, n):
+    set = sorted(goals,reverse = True)
+    set1 = [set[0]]
+    set2 = [set[1]]
+    print set1, set2
+    if n > 1:
+        for i in range(2,n):
+            if sum(set1)  <= sum(set2):
+                set1.append(set[i])
+            else:
+                set2.append(set[i])
+    return set1, set2
+    
+
+def minDiff(inp):
+    n = int(inp[0])
+    minGoalList = [int(x) for x in inp[1].split(",")]
+    maxGoalList = [int(x) for x in inp[2].split(",")]
+    print minGoalList
+    print maxGoalList
+    set1, set2 = divideSet(maxGoalList, len(maxGoalList))
+    sum1 = 0
+    print 'Set 1', set1
+    print 'Set 2', set2
+    for i in set1:
+        sum1 = sum1 + minGoalList[maxGoalList.index(i)]
+    return abs(sum(set2) - sum1)
+
+word = raw_input("Enter the list:")
+print minDiff(word.split("#"))
