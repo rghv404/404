@@ -1,0 +1,34 @@
+#base systems
+#seating arrangement--it is basically sorting in order by C desc--NO I WAS WRONG IT'S A COMPLICATED VERSION OF THAT
+#implemening selection sort first for fuck's sake....
+    
+def findMinIter(rows):
+    flag = 0
+    tgt_index = 0
+    for i in range(len(rows)):
+        row = rows[i]
+        print 'Row to be evaluated: ', row
+        if any(x == 'C' for x in row[i+1:]):
+            print 'row found to be faulted'
+            for j in range(i+1, len(rows)):
+                row2 = rows[j]
+                if not any(x == 'C' for x in row2[i+1:]):
+                    print 'Target row found'
+                    tgt_row = row2
+                    tgt_index = j
+                    break
+        print 'i: ', i , 'tgt_index: ', tgt_index
+        if tgt_index == i + 1:
+            flag += 1
+            rows[i], rows[tgt_index] = rows[tgt_index], rows[i]
+        else:
+            while tgt_index > i:
+                rows[tgt_index], rows[tgt_index-1] = rows[tgt_index-1], rows[tgt_index]
+                tgt_index -= 1
+                flag += 1
+        print 'flag: ',flag, 'i: ', i , 'tgt_index: ',tgt_index
+        print rows
+        print
+        print
+        
+findMinIter(['CCCN', 'CCNN', 'CCNN', 'CNNN'])
